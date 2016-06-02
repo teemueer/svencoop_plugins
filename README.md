@@ -11,11 +11,11 @@ My released plugins:
 My other plugins:
 * PlayerModelStuff (includes ListPlayerModels, precaches player models and implements wheelchair mode)
 
-My Map scripts:
+My map scripts:
 * horde_lms (WIP Round based Last Man Standing game mode for horde maps, draining health, score to gain health)
 * horde_lms_activate (map_script to include in maps *.cfg to enable horde_lms)
 
-My Misc. stuff:
+My misc. stuff:
 * ColorsXKCD (can be included in other scripts, implements a dictionary of the most of the [XKCD colors](https://xkcd.com/color/rgb/))
 
 Modified and/or mirrored plugins of other authors:
