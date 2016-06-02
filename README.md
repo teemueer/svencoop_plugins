@@ -1,4 +1,4 @@
-## Sven Co-op Scripts (AngelScript Plugins &amp; Map scripts)
+## Sven Co-op scripts (AngelScript plugins & Map scripts)
 
 Forum threads links:
 * [AdminSlots](http://forums.svencoop.com/showthread.php/43592-AdminSlots-Slot-reservation-for-players-listed-in-admins-txt) (admin)
