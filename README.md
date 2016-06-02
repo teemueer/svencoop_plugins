@@ -10,7 +10,7 @@ My released plugins:
 
 My other plugins:
 * NamePolice (kicks players who are not admin and are using nicknames defined in the script)
-* PlayerModelStuff (includes ListPlayerModels, precaches player models and implements wheelchair mode)
+* PlayerModelStuff (includes ListPlayerModels, precaches player models, replaces 'helmet' models and implements wheelchair mode)
 * Speedometer (a simple speed-o-meter plugin Nero made with some help of mine, persistence enabled by default)
 
 My map scripts:
