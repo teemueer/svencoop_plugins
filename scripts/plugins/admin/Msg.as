@@ -3,8 +3,7 @@ CCVar@ g_Interval;
 
 CScheduledFunction@ g_pThinkFunc = null;
 
-void PluginInit()
-{
+void PluginInit() {
   g_Module.ScriptInfo.SetAuthor("animaliZed");
   g_Module.ScriptInfo.SetContactInfo("irc://irc.rizon.net/#/dev/null");
   g_Module.ScriptInfo.SetMinimumAdminLevel(ADMIN_YES);
@@ -13,15 +12,13 @@ void PluginInit()
   @g_Interval = CCVar("interval", 421.0f, "Repeat every x seconds", ConCommandFlag::AdminOnly);
 }
 
-void MapInit()
-{
+void MapInit() {
   if (g_pThinkFunc !is null) 
     g_Scheduler.RemoveTimer(g_pThinkFunc);
   
   @g_pThinkFunc = g_Scheduler.SetInterval("msgthink", g_Interval.GetFloat());
 }
 
-void msgthink()
-{
+void msgthink() {
   g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, g_Msg.GetString() + "\n");
 }
