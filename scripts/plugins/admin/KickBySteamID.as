@@ -16,7 +16,7 @@ void KickPlayerBySteamID(const CCommand@ pArgs) {
       string szPlayerID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
 
       if (pPlayer !is null && szPlayerID.ToLowercase() == pArgs.GetArgumentsString().ToLowercase().SubString(1) && g_PlayerFuncs.AdminLevel(pPlayer) < ADMIN_YES) {
-        g_EngineFuncs.ServerCommand("kickbysteamid " + pArgs.GetArgumentsString().ToLowercase().SubString(1) + "\n");
+        g_EngineFuncs.ServerCommand("kicksteamid " + pArgs.GetArgumentsString().ToLowercase().SubString(1) + "\n");
         g_EngineFuncs.ServerExecute();
         g_PlayerFuncs.ClientPrint(pCaller, HUD_PRINTCONSOLE, "Kicked Player with ID: " + pArgs.GetArgumentsString().ToLowercase().SubString(1) + "\n");
       }
