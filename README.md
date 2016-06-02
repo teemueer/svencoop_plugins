@@ -9,7 +9,9 @@ My released plugins:
 * [PartyMode](http://forums.svencoop.com/showthread.php/43872-Party-Mode)
 
 My other plugins:
+* NamePolice (kicks players who are not admin and are using nicknames defined in the script)
 * PlayerModelStuff (includes ListPlayerModels, precaches player models and implements wheelchair mode)
+* Speedometer (a simple speed-o-meter plugin Nero made with some help of mine, persistence enabled by default)
 
 My map scripts:
 * horde_lms (WIP Round based Last Man Standing game mode for horde maps, draining health, score to gain health)
