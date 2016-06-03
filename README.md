@@ -12,7 +12,7 @@ My other plugins:
 * KickBySteamID (admin console cmd .kickid <steamid> to kick players without adding a ban)
 * NamePolice (kicks players who are not admin and are using nicknames defined in the script)
 * PlayerModelStuff (includes ListPlayerModels, precaches player models, replaces 'helmet' models and implements wheelchair mode)
-* Speedometer (a simple speed-o-meter plugin Nero made with some help of mine, persistence enabled by default)
+* SpeedoMeter (a simple speed-o-meter plugin Nero ported from an amxx plugin with some help of mine, persistence enabled by default)
 
 My map scripts:
 * horde_lms (WIP Round based Last Man Standing game mode for horde maps, draining health, score to gain health)
