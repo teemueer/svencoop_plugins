@@ -24,6 +24,7 @@ My misc. stuff:
 Modified and/or mirrored plugins of other authors:
 * [KickIdlePlayers](http://forums.svencoop.com/showthread.php/43468-Kicke-Idle-(AFK)-Players) v10.03.2016 by DeepBlueSea (admin, mirror only)
 * [RandomNextMap](http://forums.svencoop.com/showthread.php/43568-Plugin-Random-Nextmap) v1.3.0b by takedeppo.50cal (mirror only)
+* RockTheVote by Anonymous (mirror only)
 * [SimpleGlow](http://forums.svencoop.com/showthread.php/42862-Plugin-Simple-glow) by Zodemon (modified: added persistence and support for ColorsXKCD)
 * [SimpleGrab](http://forums.svencoop.com/showthread.php/43021-Simple-Grab-Plugin-for-Admins) v28.02.2016 by DeepBlueSea (admin, mirror only)
 * [SimpleTrail](http://forums.svencoop.com/showthread.php/42867-Plugin-Simple-trail) by Zodemon (modified: added persistence and support for ColorsXKCD)
