@@ -17,8 +17,8 @@ string chosenMap;
 
 void PluginInit()
 {
-	g_Module.ScriptInfo.SetAuthor("Some Faggot");
-	g_Module.ScriptInfo.SetContactInfo("asdf");
+	g_Module.ScriptInfo.SetAuthor("Straitlaced");
+	g_Module.ScriptInfo.SetContactInfo("Straitlaced @ Sven Co-op Forums");
 	g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
 	g_Hooks.RegisterHook(Hooks::Player::ClientConnected, @ClientConnected);
 	g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @ClientDisconnect);
@@ -169,7 +169,6 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 //helper method, does not check for overflows
 int intParser(string str)
 {
-	//LOL SWITCH-CASE DOES NOT SUPPORT CHAR AS INTEGRAL TYPE AND CAN'T CONVERT CHAR TO INT, I HATE ANGELSCRIPT
 	int str_toInt = 0;
 	uint str_size = str.Length();
 	uint uint_add = 0;
@@ -375,7 +374,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
 	return HOOK_CONTINUE;
 }
 
-//first player joined
+//player joined?
 HookReturnCode ClientPutInServer(CBasePlayer@ plr)
 {
 	float math = g_PlayerFuncs.GetNumPlayers() * percentage;
