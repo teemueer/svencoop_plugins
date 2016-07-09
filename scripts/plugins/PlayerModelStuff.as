@@ -8,89 +8,6 @@ const array<string> g_WheelchairModelList = {
 'soldier_wheelchair'
 };
 
-// meh workaround as we can't check for the forcepmodels fake cvar
-const array<string> g_IgnoreMaps = {
-'-sp_campaign_portal',
-'-They_Hunger_Ep1',
-'5chan_beta7',
-'alluahackbar',
-'alluahackbar2',
-'bluecell2',
-'bluecell2beta1',
-'bluecellv11',
-'bm_sts',
-'bw',
-'coldburn_beta',
-'ctf_warforts',
-'deluge_beta_v3',
-'devious2_v2',
-'devious_trials1',
-'kcastle',
-'keenrace_beta28',
-'keensolarsystem1',
-'loz1_forest',
-'loz2_tree',
-'mans_answer_v1',
-'multifield_scyberscazer900',
-'murder_beta3',
-'restriction01',
-'restriction02',
-'restriction03',
-'restriction04',
-'restriction05',
-'restriction06',
-'restriction07',
-'restriction08',
-'restriction09',
-'restriction10',
-'sence_zombietown_f4_beta',
-'source_of_life',
-'source_of_life_1_a',
-'source_of_life_1_a_v2',
-'source_of_life_2_a',
-'source_of_life_2_a_v2',
-'source_of_life_3_a',
-'source_of_life_3_b',
-'source_of_life_4_a',
-'source_of_life_4_b',
-'source_of_life_4_b_v2',
-'source_of_life_5_a',
-'source_of_life_secret_1_a',
-'sprt_starwars_b2',
-'the_dust',
-'they10',
-'they11',
-'they12',
-'they13',
-'they14',
-'they15',
-'they16',
-'they17',
-'they18',
-'they19',
-'they20',
-'they21',
-'they21b',
-'they22',
-'they22b',
-'they23',
-'they24',
-'they25',
-'they26',
-'they27',
-'they28',
-'they29',
-'they3a',
-'they3b',
-'they4',
-'they5',
-'they6',
-'they7',
-'they9',
-'touhou_hakureijinja',
-'tsa2h'
-};
-
 const int g_MaxVotes = 2;
 bool g_Wheelchair = false;
 bool g_WheelchairPrev = false;
@@ -154,7 +71,7 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer) {
   KeyValueBuffer@ pInfos = g_EngineFuncs.GetInfoKeyBuffer(pPlayer.edict());
   const string SteamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
 
-  if (g_IgnoreMaps.find(g_Engine.mapname) < 0) {
+  if (!g_Map.HasForcedPlayerModels()) {
     if (g_Wheelchair) {
       if (!g_OriginalModelList.exists(SteamId))
         g_OriginalModelList.set(SteamId, pInfos.GetValue("model"));
@@ -193,7 +110,7 @@ HookReturnCode ClientSay(SayParameters@ pParams) {
     else if (g_VoteCount >= g_MaxVotes) {
       g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Info] Maximum tries to enable wheelchairs reached, try again after map change.\n");
     }
-    else if (g_IgnoreMaps.find(g_Engine.mapname) >= 0) {
+    else if (g_Map.HasForcedPlayerModels()) {
       g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Info] Wheelchairs are not available on this map.\n");
     }
     else {
