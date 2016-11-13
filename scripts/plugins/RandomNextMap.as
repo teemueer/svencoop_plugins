@@ -1,12 +1,12 @@
 /////////////////////////////////////////////////////////////////////
-// RandomNextMap v1.3.0b
+// RandomNextMap v1.3.3b2
 // 
-//  This plugins decide next map randomly.
+//  This plugin decides next map randomly.
 //
 //  Notice: Remove mapname which is set "nextmap xxxx" in cfg from mapcyclelist.
 //           ...or this plugin changes nextmap randomly everytime.
 //
-//   by takedeppo.50cal  (Im not eng speaker!! è‹±èªžã‚ã‹ã‚“ã­ãˆã‚“ã ã‚ˆ)
+//   by takedeppo.50cal  (Im not eng speaker!! 英語わかんねえんだよ)
 //   ("set_nextmap" command by JonnyBoy0719. merged with my coding style :D)
 //
 /////////////////////////////////////////////////////////////////////
@@ -25,6 +25,9 @@ const string PLUGIN_TAG = "[RandomNextMap] ";
 CClientCommand cvar_set_nextmap( "set_nextmap", "Set the next map cycle", @SetNextMap );    // set nextmap
 CClientCommand cvar_pastmaplist( "pastmaplist", "show played map list", @ShowPastMapList ); // show g_pastList to client console 
 
+/** MersenneTwister class */
+MersenneTwister g_Mt;
+
 /** Plugin init */
 void PluginInit() {
     // ....(^^;)b yay
@@ -38,7 +41,9 @@ void PluginInit() {
     // Cvar
     @g_pExclude     = CCVar("exclude", 10, "Exclude past map number [num]", ConCommandFlag::AdminOnly);
     @g_pIgnoreEmpty = CCVar("ignoreempty", 0, "Ignore adding list when server is empty. [0=disabled, 1=enabled]", ConCommandFlag::AdminOnly);
-    @g_pRandLogic   = CCVar("logictype", 1, "Random function logic type. [0=default, 1=xorshift]", ConCommandFlag::AdminOnly);
+    @g_pRandLogic   = CCVar("logictype", 1, "Random function logic type. [0=default, 1=MersenneTwister]", ConCommandFlag::AdminOnly);
+
+    g_Mt = MersenneTwister();
 }
 
 /**  Map init */
@@ -46,11 +51,7 @@ void MapInit() {
     g_isPlayerConnected = false;
     
     string old = g_MapCycle.GetNextMap();
-    if (isNextmapInList()) {
-        execRandomNextMap();
-    }
-    
-    if (old != g_MapCycle.GetNextMap()) {
+    if (execRandomNextMap()) {
         g_EngineFuncs.ServerPrint(PLUGIN_TAG + "Nextmap changed: " +  old + "->" + g_MapCycle.GetNextMap() + "\n");
     }
 }
@@ -76,8 +77,8 @@ HookReturnCode MapChange() {
     return HOOK_CONTINUE;
 }
 
-/** Check nextmap is in mapcycle list */
-bool isNextmapInList() {
+/** Change nextmap randomly */
+bool execRandomNextMap() {
     // Check mapcycle num. (first map with cfg overwrote, then return 0 too.)
     if (g_MapCycle.Count() <= 0) {
         return false;
@@ -85,17 +86,39 @@ bool isNextmapInList() {
     // Retrieve maplist
     array<string> mapList = g_MapCycle.GetMapCycle();
     
-    return (mapList.find(g_MapCycle.GetNextMap()) >= 0);
+    // Nextmap is not in mapcycle, no change return.
+    if (mapList.find(g_MapCycle.GetNextMap()) < 0) {
+        return false;
+    }
+    
+    // Remove past maps
+    mapListExclude(mapList);
+    if (mapList.length() == 0) {
+        return false;
+    }
+    
+    // Random choose
+    uint target = (g_pRandLogic.GetInt() == 1) ? 
+        g_Mt.mtRand(mapList.length() - 1) : Math.RandomLong(0, mapList.length() - 1);
+    
+    // Execute ServerCommand
+    g_EngineFuncs.ServerCommand("mp_nextmap_cycle " + mapList[target] + "\n");
+    g_EngineFuncs.ServerExecute();
+    return true;
 }
 
-/** Change nextmap randomly */
-void execRandomNextMap() {
-    // Check mapcycle num. (first map with cfg overwrote, then return 0 too.)
+void execRandomChooseMap() {
+     // Check mapcycle num. (first map with cfg overwrote, then return 0 too.)
     if (g_MapCycle.Count() <= 0) {
         return;
     }    
     // Retrieve maplist
     array<string> mapList = g_MapCycle.GetMapCycle();
+    
+    // Nextmap is exist in mapcycle, exit
+    if (mapList.find(g_MapCycle.GetNextMap()) >= 0) {
+        return;
+    }
     
     // Remove past maps
     mapListExclude(mapList);
@@ -105,11 +128,10 @@ void execRandomNextMap() {
     
     // Random choose
     uint target = (g_pRandLogic.GetInt() == 1) ? 
-        xorRand(mapList.length() - 1) : Math.RandomLong(0, mapList.length() - 1);
-    
+        g_Mt.mtRand(mapList.length() - 1) : Math.RandomLong(0, mapList.length() - 1);
     
     // Execute ServerCommand
-    g_EngineFuncs.ServerCommand("mp_nextmap_cycle " + mapList[target] + "\n");
+    g_EngineFuncs.ServerCommand("changelevel " + mapList[target] + "\n");
     g_EngineFuncs.ServerExecute();
 }
 
@@ -210,27 +232,181 @@ void ShowPastMapList(const CCommand@ args) {
     g_PlayerFuncs.ClientPrint(client, HUD_PRINTCONSOLE, "-----------------------------\n");
 }
 
-/** xorshift 32bit logic */
-uint xorshift(uint &in seed) {
-    uint y = seed;
-    y = y ^ (y << 13);
-    y = y ^ (y >> 17);
-    y = y ^ (y << 5);
-    return y;
+
+//=======================================================================================================
+// RAMDOM LOGIC //////
+
+////////////////////////////////////////////
+// MersenneTwister
+//
+//  wrapped and converted to AngelScript 
+//    by takedeppo.50cal ....(^^;)b
+//
+//  (if you want to know detail, read original source pls)
+////////////////////////////////////////////
+
+/* 
+   A C-program for MT19937, with initialization improved 2002/1/26.
+   Coded by Takuji Nishimura and Makoto Matsumoto.
+
+   Before using, initialize the state by using init_genrand(seed)  
+   or init_by_array(init_key, key_length).
+
+   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+   All rights reserved.                          
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+     1. Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+     3. The names of its contributors may not be used to endorse or promote 
+        products derived from this software without specific prior written 
+        permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+   Any feedback is very welcome.
+   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+   email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
+*/
+class MersenneTwister {
+    int N = 624;
+    int M = 397;
+    
+    uint64 MATRIX_A   = 0x9908b0df;   /* constant vector a */
+    uint64 UPPER_MASK = 0x80000000; /* most significant w-r bits */
+    uint64 LOWER_MASK = 0x7fffffff; /* least significant r bits */
+    
+    uint64[] mt(N); /* the array for the state vector  */
+    int mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
+
+    MersenneTwister() {
+//        const DateTime dt = DateTime();
+//        const time_t unixtime = dt.ToUnixTimestamp();
+//        const uint64 randSeed = uint64(unixtime);
+//        init_genrand(randSeed);
+        
+        const int INT_MAX = 2147483647;
+        const uint64 randSeed = uint64(Math.RandomLong(0, INT_MAX));
+        init_genrand(randSeed);
+    }
+    
+    MersenneTwister(uint64 s) {
+        init_genrand(s);
+    }
+    
+    /* initializes mt[N] with a seed */
+    void init_genrand(uint64 s) {
+        mt[0]= s & 0xffffffff;
+        for (mti = 1; mti < N; mti++) {
+            mt[mti] = (1812433253 * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+            /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+            /* In the previous versions, MSBs of the seed affect   */
+            /* only MSBs of the array mt[].                        */
+            /* 2002/01/09 modified by Makoto Matsumoto             */
+            mt[mti] &= 0xffffffff;
+            /* for >32 bit machines */
+        }
+    }
+    
+    /* generates a random number on [0,0xffffffff]-interval */
+    uint64 genrand_int32() {
+        uint64 y;
+        uint64[] mag01 = {0x0, MATRIX_A};
+        /* mag01[x] = x * MATRIX_A  for x=0,1 */
+
+        if (mti >= N) { /* generate N words at one time */
+            int kk;
+
+            if (mti == N+1) {  /* if init_genrand() has not been called, */
+                init_genrand(5489); /* a default initial seed is used */
+            }
+
+            for (kk = 0; kk < N - M; kk++) {
+                y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+                mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
+            }
+            for (; kk < N - 1; kk++) {
+                y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+                mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
+            }
+            y = (mt[N-1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
+            mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1];
+
+            mti = 0;
+        }
+      
+        y = mt[mti++];
+
+        /* Tempering */
+        y ^= (y >> 11);
+        y ^= (y << 7) & 0x9d2c5680;
+        y ^= (y << 15) & 0xefc60000;
+        y ^= (y >> 18);
+
+        return y;
+    }
+
+    /* generates a random number on [0,0x7fffffff]-interval */
+    int64 genrand_int31() {
+        return int64(genrand_int32()>>1);
+    }
+
+    /* generates a random number on [0,1]-real-interval */
+    double genrand_real1() {
+        return genrand_int32()*(1.0/4294967295.0); 
+        /* divided by 2^32-1 */ 
+    }
+
+    /* generates a random number on [0,1)-real-interval */
+    double genrand_real2() {
+        return genrand_int32()*(1.0/4294967296.0); 
+        /* divided by 2^32 */
+    }
+
+    /* generates a random number on (0,1)-real-interval */
+    double genrand_real3() {
+        return (double(genrand_int32()) + 0.5) * (1.0 / 4294967296.0); 
+        /* divided by 2^32 */
+    }
+
+    /* generates a random number on [0,1) with 53-bit resolution*/
+    double genrand_res53() { 
+        uint64 a = genrand_int32()>>5;
+        uint64 b = genrand_int32()>>6;
+        return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0); 
+    } 
+    /* These real versions are due to Isaku Wada, 2002/01/09 added */
+    
+    /** modulo function */
+    int mtRand(int &in max) {
+        
+        // Cast to int FORCIBLY :D
+        //  uint can not obtain correct value.
+        //  ...maybe modulo(%) result depend on the types of the operand.
+        int ret = genrand_int32() % max;
+        ret = (ret > 0) ? ret : -ret;
+        
+        return ret;
+    }
 }
 
-/** xorshift random function */
-int xorRand(int &in max) {
-    // use current unixtime as seed value
-    const DateTime dt = DateTime();
-    const time_t unixtime = dt.ToUnixTimestamp();    
-    const uint randSeed = uint(unixtime);
-    
-    // Cast to int FORCIBLY :D
-    //  uint can not obtain correct value.
-    //  ...maybe modulo(%) result depend on the types of the operand.
-    int ret = xorshift(randSeed) % max;
-    ret = (ret > 0) ? ret : -ret;
-    
-    return ret;
-}
+//=======================================================================================================
