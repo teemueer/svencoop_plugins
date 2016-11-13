@@ -4,7 +4,7 @@ const uint g_Delay = 8000;
 dictionary g_SoundList;
 dictionary g_ChatTimes;
 
-array<string> @g_SoundListKeys = g_SoundList.getKeys();
+array<string> @g_SoundListKeys;
 
 CClientCommand g_ListSounds("listsounds", "List all chat sounds", @listsounds);
 
@@ -45,6 +45,7 @@ void ReadSounds() {
       g_SoundList[parsed[0]] = parsed[1];
     }
     file.Close();
+    @g_SoundListKeys = g_SoundList.getKeys();
   }
 }
 
