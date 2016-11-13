@@ -1,0 +1,4 @@
+hello scientist/hello.wav
+move hgrunt/move!.wav
+yay cards/yay.ogg
+yees scientist/yees.wav
