@@ -1,0 +1,7 @@
+sprites/lgtning.spr lightning
+sprites/nyanpasu_smaller.spr nyanpasu
+sprites/xbeam4.spr smokey
+sprites/zbeam3.spr fatline
+sprites/zbeam5.spr thinline
+sprites/zode/trails/point.spr point
+sprites/zode/trails/squarewave.spr squarewave
