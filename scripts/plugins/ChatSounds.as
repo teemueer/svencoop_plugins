@@ -1,15 +1,12 @@
-const dictionary g_SoundList = {
-  {'*cheer*', 'tfc/ambience/goal_1.wav'},
-  // ...
-  {'groovey', 'bluecell/groovey.wav'},
-  {'gw', 'sectore/goodwork.wav'}
-};
-
-const array<string> @g_SoundListKeys = g_SoundList.getKeys();
 const string g_SpriteName = 'sprites/voiceicon.spr';
 const uint g_Delay = 8000;
 
+dictionary g_SoundList;
 dictionary g_ChatTimes;
+
+array<string> @g_SoundListKeys = g_SoundList.getKeys();
+
+CClientCommand g_ListSounds("listsounds", "List all chat sounds", @listsounds);
 
 void PluginInit() {
   g_Module.ScriptInfo.SetAuthor("animaliZed");
@@ -19,13 +16,63 @@ void PluginInit() {
 }
 
 void MapInit() {
+  g_SoundList.deleteAll();
   g_ChatTimes.deleteAll();
+
+  ReadSounds();
 
   for (uint i = 0; i < g_SoundListKeys.length(); ++i) {
     g_Game.PrecacheGeneric("sound/" + string(g_SoundList[g_SoundListKeys[i]]));
     g_SoundSystem.PrecacheSound(string(g_SoundList[g_SoundListKeys[i]]));
   }
   g_Game.PrecacheModel(g_SpriteName);
+}
+
+const string g_SoundFile = "scripts/plugins/ChatSounds.txt";
+void ReadSounds() {
+  File@ file = g_FileSystem.OpenFile(g_SoundFile, OpenFile::READ);
+  if (file !is null && file.IsOpen()) {
+    while(!file.EOFReached()) {
+      string sLine;
+      file.ReadLine(sLine);
+      if (sLine.SubString(0,1) == "#" || sLine.IsEmpty())
+        continue;
+
+      array<string> parsed = sLine.Split(" ");
+      if (parsed.length() < 2)
+        continue;
+
+      g_SoundList[parsed[0]] = parsed[1];
+    }
+    file.Close();
+  }
+}
+
+void listsounds(const CCommand@ pArgs) {
+  CBasePlayer@ pPlayer = g_ConCommandSystem.GetCurrentPlayer();
+
+  g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "AVAILABLE SOUND TRIGGERS\n");
+  g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "------------------------\n");
+
+  string sMessage = "";
+
+  for (uint i = 1; i < g_SoundListKeys.length()+1; ++i) {
+    sMessage += g_SoundListKeys[i-1] + " | ";
+
+    if (i % 5 == 0) {
+      sMessage.Resize(sMessage.Length() -2);
+      g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, sMessage);
+      g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "\n");
+      sMessage = "";
+    }
+  }
+
+  if (sMessage.Length() > 2) {
+    sMessage.Resize(sMessage.Length() -2);
+    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, sMessage + "\n");
+  }
+
+  g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "\n");
 }
 
 HookReturnCode ClientSay(SayParameters@ pParams) {
