@@ -9,7 +9,7 @@ My released plugins:
 * [PartyMode](http://forums.svencoop.com/showthread.php/43872-Party-Mode)
 
 My other plugins:
-* KickBySteamID (admin console cmd .kickid <steamid> to kick players without adding a ban)
+* KickBySteamID (admin console cmd .kickid <steamid> to kick players without adding a ban, seems to be broken?)
 * NamePolice (kicks players who are not admin and are using nicknames defined in the script)
 * PlayerModelStuff (includes ListPlayerModels, precaches player models, replaces 'helmet' models and implements wheelchair mode)
 * SpeedoMeter (a simple speed-o-meter plugin Nero ported from an amxx plugin with some help of mine, persistence enabled by default)
@@ -18,13 +18,11 @@ My map scripts:
 * horde_lms (WIP Round based Last Man Standing game mode for horde maps, draining health, score to gain health)
 * horde_lms_activate (map_script to include in maps *.cfg to enable horde_lms)
 
-My misc. stuff:
-* ColorsXKCD (can be included in other scripts, implements a dictionary of the most of the [XKCD colors](https://xkcd.com/color/rgb/))
-
 Modified and/or mirrored plugins of other authors:
 * [KickIdlePlayers](http://forums.svencoop.com/showthread.php/43468-Kicke-Idle-(AFK)-Players) v10.03.2016 by DeepBlueSea (admin, mirror only)
-* [RandomNextMap](http://forums.svencoop.com/showthread.php/43568-Plugin-Random-Nextmap) v1.3.0b by takedeppo.50cal (mirror only)
+* [RandomNextMap](http://forums.svencoop.com/showthread.php/43568-Plugin-Random-Nextmap) v1.3.3b2 by takedeppo.50cal (mirror only)
 * [RockTheVote](http://forums.svencoop.com/showthread.php/43917-Plugin-RockTheVote) by Straitlaced (mirror only)
-* [SimpleGlow](http://forums.svencoop.com/showthread.php/42862-Plugin-Simple-glow) by Zodemon (modified: added persistence and support for ColorsXKCD)
+* [RockTheVoteMVCFG](http://forums.svencoop.com/showthread.php/43917-Plugin-RockTheVote) by Straitlaced (modified: use mapvote.cfg in svencoop_addon/scripts/plugins/mapvote.cfg instead of mapcycle.txt and be more verbose to all players)
+* [SimpleGlow](http://forums.svencoop.com/showthread.php/42862-Plugin-Simple-glow) by Zodemon (mirror only)
 * [SimpleGrab](http://forums.svencoop.com/showthread.php/43021-Simple-Grab-Plugin-for-Admins) v28.02.2016 by DeepBlueSea (admin, mirror only)
-* [SimpleTrail](http://forums.svencoop.com/showthread.php/42867-Plugin-Simple-trail) by Zodemon (modified: added persistence and support for ColorsXKCD)
+* [SimpleTrail](http://forums.svencoop.com/showthread.php/42867-Plugin-Simple-trail) by Zodemon (mirror only)
