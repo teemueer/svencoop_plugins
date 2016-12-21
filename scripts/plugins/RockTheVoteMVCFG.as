@@ -109,12 +109,13 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				g_RockTheVote.insertLast(steamId);
 				counter++;
 				g_PlayerFuncs.SayTextAll(plr, "[RTV] " + plr.pev.netname + " has rocked the vote.\n");
+				g_PlayerFuncs.SayTextAll(plr, "[RTV] " + counter + " out of " + required + " required RTV have rocked the vote!\n");
 			}
 			else
 			{
 				g_PlayerFuncs.SayText(plr, "[RTV] Already rocked the vote!\n");
+				g_PlayerFuncs.SayText(plr, "[RTV] " + counter + " out of " + required + " required RTV have rocked the vote!\n");
 			}
-			g_PlayerFuncs.SayTextAll(plr, "[RTV] " + counter + " out of " + required + " required RTV have rocked the vote!\n");
 			//start rtv if possible
 			if(counter >= required && !voteStarted)
 			{
@@ -299,10 +300,11 @@ void startVote(CBasePlayer@ plr)
 	}
 	g_PlayerFuncs.SayTextAll(plr, "[RTV] Enough players have rocked the vote.\n");
 	voteStarted = true;
-	g_PlayerFuncs.SayTextAll(plr, "[RTV] There is 20 seconds to vote.\n");
+	g_PlayerFuncs.SayTextAll(plr, "[RTV] There is 30 seconds to vote.\n");
 	listmaps(plr);
 	g_PlayerFuncs.SayTextAll(plr, "[RTV] Type \"rtv [number in respect to map listed]\" to vote for a particular map\n");
-	g_Scheduler.SetTimeout("vote", 20, @plr);
+	listmaps(plr);
+	g_Scheduler.SetTimeout("vote", 30, @plr);
 }
 
 void vote(CBasePlayer@ plr)
