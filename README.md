@@ -19,6 +19,7 @@ My map scripts:
 * horde_lms_activate (map_script to include in maps *.cfg to enable horde_lms)
 
 Modified and/or mirrored plugins of other authors:
+* [AntiFlood](http://forums.svencoop.com/showthread.php/44388-Plugin-AntiFlood) by Zodemon (mirror only)
 * [KickIdlePlayers](http://forums.svencoop.com/showthread.php/43468-Kicke-Idle-(AFK)-Players) v10.03.2016 by DeepBlueSea (admin, mirror only)
 * [RandomNextMap](http://forums.svencoop.com/showthread.php/43568-Plugin-Random-Nextmap) v1.3.3b2 by takedeppo.50cal (mirror only)
 * [RockTheVote](http://forums.svencoop.com/showthread.php/43917-Plugin-RockTheVote) by Straitlaced (mirror only)
