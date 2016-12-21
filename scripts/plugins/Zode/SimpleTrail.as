@@ -14,7 +14,7 @@ CScheduledFunction@ g_TrailThink = null;
 void PluginInit()
 {
 	g_Module.ScriptInfo.SetAuthor("Zode");
-	g_Module.ScriptInfo.SetContactInfo("Zodemon @ Sven co-op forums, Zode @ Sven co-op discrod");
+	g_Module.ScriptInfo.SetContactInfo("Zodemon @ Sven co-op forums, Zode @ Sven co-op discord");
 	
 	g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
 	g_Hooks.RegisterHook( Hooks::Player::ClientDisconnect, @ClientDisconnect );
@@ -101,6 +101,9 @@ void ReadColors()
 		{
 			string sLine;
 			file.ReadLine(sLine);
+			if(sLine.SubString(sLine.Length()-1,1) == " " || sLine.SubString(sLine.Length()-1,1) == "\n" || sLine.SubString(sLine.Length()-1,1) == "\r" || sLine.SubString(sLine.Length()-1,1) == "\t")
+					sLine = sLine.SubString(0, sLine.Length()-1);
+			
 			if(sLine.SubString(0,1) == "#" || sLine.IsEmpty())
 				continue;
 			
@@ -122,6 +125,7 @@ class TrailSpriteData
 {
 	int sprIndex;
 	string sprPath;
+	bool sprColored;
 }
 dictionary g_TrailSprites;
 
@@ -135,11 +139,14 @@ void ReadSprites()
 		{
 			string sLine;
 			file.ReadLine(sLine);
+			if(sLine.SubString(sLine.Length()-1,1) == " " || sLine.SubString(sLine.Length()-1,1) == "\n" || sLine.SubString(sLine.Length()-1,1) == "\r" || sLine.SubString(sLine.Length()-1,1) == "\t")
+					sLine = sLine.SubString(0, sLine.Length()-1);
+			
 			if(sLine.SubString(0,1) == "#" || sLine.IsEmpty())
 				continue;
 			
 			array<string> parsed = sLine.Split(" ");
-			if(parsed.length() < 2)
+			if(parsed.length() < 3)
 				continue;
 			
 			//linux quickfix
@@ -148,6 +155,7 @@ void ReadSprites()
 				
 			TrailSpriteData tsData;
 			tsData.sprPath = parsed[0];
+			tsData.sprColored = atoi(parsed[2]) > 0 ? true : false;
 			g_TrailSprites[parsed[1].ToLowercase()] = tsData;	
 		}
 		file.Close();
@@ -197,8 +205,20 @@ void spriteMenuCallBack(CTextMenu@ mMenu, CBasePlayer@ pPlayer, int iPage, const
 {
 	if(mItem !is null && pPlayer !is null)
 	{
-		setSprite(pPlayer, mItem.m_szName);
-		trailMenu.Open(0, 0, pPlayer);
+		TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[mItem.m_szName]);
+		if(tsData.sprColored)
+		{
+			addTrail(pPlayer, Vector(255,255,255), mItem.m_szName);
+			if(g_cvarSilence.GetBool())
+			{
+				g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[Trail menu] You now have a colored trail (sprite \""+mItem.m_szName+"\").\n");
+			}else{
+				g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Trail menu] " + pPlayer.pev.netname + " has now a colored trail (sprite \""+mItem.m_szName+"\").\n");
+			}
+		}else{
+			setSprite(pPlayer, mItem.m_szName);
+			trailMenu.Open(0, 0, pPlayer);
+		}
 	}
 }
 
@@ -302,12 +322,34 @@ HookReturnCode ClientSay(SayParameters@ pParams)
 					
 					
 					addTrail(pPlayer, Vector(g_TrailColors[cArguments.Arg(1).ToLowercase()]), sSprite);
+				}else if(g_TrailSprites.exists(cArguments.Arg(1).ToLowercase())){
+					string sSprite =  cArguments.Arg(1).ToLowercase();
+						
+					TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[sSprite]);
+					if(tsData.sprColored)
+					{
+						if(bSilent)
+						{
+							g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[Trail] You now have a colored trail (sprite \""+sSprite+"\").\n");
+						}else{
+							g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Trail] " + pPlayer.pev.netname + " has now a colored trail (sprite \""+sSprite+"\").\n");
+						}
+						
+						addTrail(pPlayer, Vector(255,255,255), sSprite);
+					}else{
+						if(bSilent)
+						{
+							g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[Trail] \""+sSprite+"\" isnt a colored sprite! use \"trail <color> <sprite>\" or \"trail menu\".\n");
+						}else{
+							g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Trail] \""+sSprite+"\" isnt a colored sprite! use \"trail <color> <sprite>\" or \"trail menu\".\n");
+						}
+					}
 				}else{
 					if(bSilent)
 					{
-						g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[Trail] No such color, try typing trail menu?\n");
+						g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[Trail] No such color or colored sprite, try typing \"trail menu\"?\n");
 					}else{
-						g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Trail] No such color, try typing trail menu?\n");
+						g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[Trail] No such color or colored sprite, try typing \"trail menu\"?\n");
 					}
 				}
 			}
@@ -327,6 +369,8 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
 
 	if(g_PlayerCrossover.exists(steamId) && steamId != "")
 		g_PlayerCrossover.delete(steamId);
+		
+	//removeTrail(pPlayer);
 	
 	return HOOK_CONTINUE;
 }
@@ -369,6 +413,9 @@ void trailThink()
 			return;
 		
 		CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(ptData.id);
+		
+		if(pPlayer is null)
+			return;
 		
 		Vector vVel = pPlayer.pev.velocity;
 		bool bTemp = false;
@@ -423,41 +470,55 @@ void addTrail(CBasePlayer@ pPlayer, Vector color, string sSprite)
 	string steamId = getFixedSteamId(pPlayer);
 	if(g_PlayerTrails.exists(steamId) && steamId != "")
 	{ // replace
+		Vector TargetColor = color;
 		PlayerTrailData@ ptData = cast<PlayerTrailData@>(g_PlayerTrails[steamId]);
 		ptData.id = g_EntityFuncs.EntIndex(pPlayer.edict());
-		ptData.color = color;
+		ptData.color = TargetColor;
 		ptData.restart = false;
 		ptData.enabled = true;
 		PlayerCrossoverData@ pcData = cast<PlayerCrossoverData@>(g_PlayerCrossover[steamId]);
-		pcData.color = color;
+		pcData.color = TargetColor;
+		TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[sSprite]);
+		if(tsData.sprColored)
+		{
+			ptData.color = Vector(255,255,255);
+			pcData.color = Vector(255,255,255);
+			TargetColor = Vector(255,255,255);
+		}
 		if(sSprite != "!NOSET!")
 		{
-			TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[sSprite]);
 			ptData.sprIndex = tsData.sprIndex;
 			pcData.sprName = sSprite;
 		}
 		
 		
 		killMsg(ptData.id);
-		trailMsg(pPlayer, color, ptData.sprIndex);
+		trailMsg(pPlayer, TargetColor, ptData.sprIndex);
 	}else{ // new
+		Vector TargetColor = color;
 		PlayerTrailData ptData;
 		ptData.id = g_EntityFuncs.EntIndex(pPlayer.edict());
-		ptData.color = color;
+		ptData.color = TargetColor;
 		ptData.restart = false;
 		ptData.enabled = true;
 		PlayerCrossoverData pcData;
-		pcData.color = color;
+		pcData.color = TargetColor;
+		TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[sSprite]);
+		if(tsData.sprColored)
+		{
+			ptData.color = Vector(255,255,255);
+			pcData.color = Vector(255,255,255);
+			TargetColor = Vector(255,255,255);
+		}
 		if(sSprite != "!NOSET!")
 		{
-			TrailSpriteData@ tsData = cast<TrailSpriteData@>(g_TrailSprites[sSprite]);
 			ptData.sprIndex = tsData.sprIndex;
-			pcData.sprName = sSprite;
+			pcData.sprName = sSprite;	
 		}
 		
 		g_PlayerTrails[steamId] = ptData;
 		g_PlayerCrossover[steamId] = pcData;
-		trailMsg(pPlayer, color, ptData.sprIndex);
+		trailMsg(pPlayer, TargetColor, ptData.sprIndex);
 	}
 		
 }
