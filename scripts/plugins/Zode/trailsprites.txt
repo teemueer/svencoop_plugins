@@ -1,7 +1,7 @@
-sprites/lgtning.spr lightning
-sprites/nyanpasu_smaller.spr nyanpasu
-sprites/xbeam4.spr smokey
-sprites/zbeam3.spr fatline
-sprites/zbeam5.spr thinline
-sprites/zode/trails/point.spr point
-sprites/zode/trails/squarewave.spr squarewave
+sprites/lgtning.spr lightning 0
+sprites/nyanpasu_smaller.spr nyanpasu 1
+sprites/xbeam4.spr smokey 0
+sprites/zbeam3.spr fatline 0
+sprites/zbeam5.spr thinline 0
+sprites/zode/trails/point.spr point 0
+sprites/zode/trails/squarewave.spr squarewave 0
