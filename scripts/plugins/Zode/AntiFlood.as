@@ -8,7 +8,7 @@ CScheduledFunction@ g_AntiFloodThink = null;
 void PluginInit()
 {
 	g_Module.ScriptInfo.SetAuthor("Zode");
-	g_Module.ScriptInfo.SetContactInfo("Zodemon @ Sven co-op forums, Zode @ Sven co-op discrod");
+	g_Module.ScriptInfo.SetContactInfo("Zodemon @ Sven co-op forums, Zode @ Sven co-op discord");
 	
 	g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
 	g_Hooks.RegisterHook( Hooks::Player::ClientDisconnect, @ClientDisconnect );
@@ -65,7 +65,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
 				
 				pcData.isMuted = true;
 				pcData.muteTime = g_EngineFuncs.Time()+g_cvarMuteTime.GetFloat();
-			}else{
+			}else if(!pcData.floodWarn && !pcData.isMuted){
 				g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[AntiFlood] Stop spamming the server!\n"); 
 				pcData.floodWarn = true;
 				pcData.warnTime = g_EngineFuncs.Time()+g_cvarWarnTime.GetFloat();
@@ -96,7 +96,7 @@ void antifloodthink()
 	{
 		PlayerChatData@ pcData = cast<PlayerChatData@>(g_PlayerChat[playerChatIds[i]]);
 		if(!pcData.isMuted && !pcData.floodWarn)
-			return;
+			continue;
 			
 		if(pcData.isMuted && pcData.muteTime <= g_EngineFuncs.Time())
 		{
